@@ -90,40 +90,40 @@ jobs:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.qualitygate.wait=true -Dsonar.projectKey=henriquecavichioli_devsecops
 
-snyk-test:
-  runs-on: ubuntu-latest
-  needs: build
-  steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+  snyk-test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-    # Adicionar permissões de execução ao Maven Wrapper
-    - name: Add execute permissions to Maven Wrapper
-      run: chmod +x ./mvnw
+      # Adicionar permissões de execução ao Maven Wrapper
+      - name: Add execute permissions to Maven Wrapper
+        run: chmod +x ./mvnw
 
-    # Instale o Snyk CLI
-    - name: Install Snyk
-      run: npm install -g snyk
+      # Instale o Snyk CLI
+      - name: Install Snyk
+        run: npm install -g snyk
 
-    # Autenticar o Snyk usando o token da secret
-    - name: Authenticate Snyk
-      run: snyk auth ${{ secrets.SNYK_TOKEN }}
+      # Autenticar o Snyk usando o token da secret
+      - name: Authenticate Snyk
+        run: snyk auth ${{ secrets.SNYK_TOKEN }}
 
-    # Execute o Snyk para verificar vulnerabilidades no projeto
-    - name: Snyk Test
-      run: snyk test
+      # Execute o Snyk para verificar vulnerabilidades no projeto
+      - name: Snyk Test
+        run: snyk test
 
-    # Opcional: Monitorar o projeto no Snyk
-    - name: Snyk Monitor
-      run: snyk monitor
+      # Opcional: Monitorar o projeto no Snyk
+      - name: Snyk Monitor
+        run: snyk monitor
 
-    # Agora faz o cache Maven após Snyk
-    - name: Cache Maven packages
-      uses: actions/cache@v1
-      with:
-        path: ~/.m2
-        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-        restore-keys: ${{ runner.os }}-m2
+      # Agora faz o cache Maven após Snyk
+      - name: Cache Maven packages
+        uses: actions/cache@v1
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
 
   build:
     runs-on: ubuntu-latest
