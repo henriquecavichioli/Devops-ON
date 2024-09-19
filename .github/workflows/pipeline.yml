@@ -90,37 +90,40 @@ jobs:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.qualitygate.wait=true -Dsonar.projectKey=henriquecavichioli_devsecops
 
-  snyk-test:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+snyk-test:
+  runs-on: ubuntu-latest
+  needs: build
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-      # Instale o Snyk CLI
-      - name: Install Snyk
-        run: |
-          npm install -g snyk
+    # Adicionar permissões de execução ao Maven Wrapper
+    - name: Add execute permissions to Maven Wrapper
+      run: chmod +x ./mvnw
 
-      # Autenticar o Snyk usando o token da secret
-      - name: Authenticate Snyk
-        run: snyk auth ${{ secrets.SNYK_TOKEN }}
+    # Instale o Snyk CLI
+    - name: Install Snyk
+      run: npm install -g snyk
 
-      # Execute o Snyk para verificar vulnerabilidades no projeto
-      - name: Snyk Test
-        run: snyk test
+    # Autenticar o Snyk usando o token da secret
+    - name: Authenticate Snyk
+      run: snyk auth ${{ secrets.SNYK_TOKEN }}
 
-      # Opcional: Monitorar o projeto no Snyk
-      - name: Snyk Monitor
-        run: snyk monitor
+    # Execute o Snyk para verificar vulnerabilidades no projeto
+    - name: Snyk Test
+      run: snyk test
 
-      # Agora faz o cache Maven após Snyk
-      - name: Cache Maven packages
-        uses: actions/cache@v1
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
+    # Opcional: Monitorar o projeto no Snyk
+    - name: Snyk Monitor
+      run: snyk monitor
+
+    # Agora faz o cache Maven após Snyk
+    - name: Cache Maven packages
+      uses: actions/cache@v1
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
 
   build:
     runs-on: ubuntu-latest
@@ -129,13 +132,6 @@ jobs:
     - uses: actions/checkout@v2
       with:
         fetch-depth: 0
-    
-    # Adicionar permissão de execução ao script mvnw
-    - name: Add execute permissions to Maven
-      run: chmod +x ./mvnw
-    
-    - name: Package
-      run: ./mvnw package  
 
   deploy-STG:
     runs-on: ubuntu-latest
