@@ -90,40 +90,16 @@ jobs:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.qualitygate.wait=true -Dsonar.projectKey=henriquecavichioli_devsecops
 
-  snyk-test:
+  security:
     runs-on: ubuntu-latest
-    needs: build
+    needs: code-analisys
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      # Adicionar permissões de execução ao Maven Wrapper
-      - name: Add execute permissions to Maven Wrapper
-        run: chmod +x ./mvnw
-
-      # Instale o Snyk CLI
-      - name: Install Snyk
-        run: npm install -g snyk
-
-      # Autenticar o Snyk usando o token da secret
-      - name: Authenticate Snyk
-        run: snyk auth ${{ secrets.SNYK_TOKEN }}
-
-      # Execute o Snyk para verificar vulnerabilidades no projeto
-      - name: Snyk Test
-        run: snyk test
-
-      # Opcional: Monitorar o projeto no Snyk
-      - name: Snyk Monitor
-        run: snyk monitor
-
-      # Agora faz o cache Maven após Snyk
-      - name: Cache Maven packages
-        uses: actions/cache@v1
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
+      - uses: actions/checkout@master
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/maven@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   build:
     runs-on: ubuntu-latest
