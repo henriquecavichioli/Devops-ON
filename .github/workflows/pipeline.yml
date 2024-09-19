@@ -104,6 +104,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      # Adicionar permissão de execução ao script mvnw
+      - name: Add execute permissions to Maven Wrapper
+        run: chmod +x ./mvnw
+
       # Instale o Snyk CLI
       - name: Install Snyk
         run: |
